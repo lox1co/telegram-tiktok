@@ -2,8 +2,11 @@
   "name": "t",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
+    "start": "ts-node src/index.ts",
+    "build": "tsc",
+    "node": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -15,5 +18,11 @@
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1",
     "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/sqlite3": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^6.0.3"
   }
 }
