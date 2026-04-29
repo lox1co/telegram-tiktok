@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
-dotenv.config();
+import path from "node:path";
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 import Database from "./db/database";
 import TikTokService from "./services/TikTokService";
