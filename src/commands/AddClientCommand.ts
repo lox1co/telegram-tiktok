@@ -3,13 +3,12 @@ import Database from "../db/database";
 import { BotContext } from "../types";
 
 class AddClientCommand extends BaseCommand {
-  constructor(db: Database, adminId: number) {
-    super("addclient", db, adminId);
-  }
+  name = "addclient";
+  description = "Registra un cliente reenviando o respondiendo a su mensaje";
+  usage = "/addclient";
+  adminOnly = true;
 
   async execute(ctx: BotContext): Promise<void> {
-    if (!this.isAdmin(ctx)) return;
-
     ctx.session.step = "addclient";
     await ctx.reply("📩 Reenvía o responde a un mensaje del usuario");
   }

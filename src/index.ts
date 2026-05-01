@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import path from "node:path";
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
+import fs from "node:fs";
 import Database from "./db/database";
 import TikTokService from "./services/TikTokService";
 import DownloaderService from "./services/DownloaderService";
@@ -9,15 +10,6 @@ import TelegramService from "./services/TelegramService";
 import System from "./core/System";
 import BotService from "./services/BotService";
 import MessageHandler from "./handlers/MessageHandler";
-
-// Commands
-import GetIdCommand from "./commands/GetIdCommand";
-import AddClientCommand from "./commands/AddClientCommand";
-import SetupCommand from "./commands/SetupCommand";
-import ListCommand from "./commands/ListCommand";
-import DeleteCommand from "./commands/DeleteCommand";
-import SetLimitCommand from "./commands/SetLimitCommand";
-import HelpCommand from "./commands/HelpCommand";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = Number(process.env.ADMIN_ID);
@@ -36,31 +28,51 @@ async function start(): Promise<void> {
   try {
     console.log("🚀 Iniciando sistema...");
 
-    // 1. Database
     const db = new Database();
     await db.dbPromise;
 
-    // 2. Services
     const tiktok = new TikTokService();
     const downloader = new DownloaderService();
     const telegram = new TelegramService(BOT_TOKEN!);
 
-    // 3. System (Workers)
     const system = new System(db, tiktok, downloader, telegram);
 
-    // 4. Commands & Handlers
     const messageHandler = new MessageHandler(db);
-    const commandsList = [
-      new GetIdCommand(db, ADMIN_ID),
-      new AddClientCommand(db, ADMIN_ID),
-      new SetupCommand(db, ADMIN_ID),
-      new ListCommand(db, ADMIN_ID),
-      new DeleteCommand(db, ADMIN_ID),
-      new SetLimitCommand(db, ADMIN_ID),
-      new HelpCommand(db, ADMIN_ID),
-    ];
 
-    // 5. Bot
+    // Dynamic Command Loading
+    const commandsList: any[] = [];
+    const commandsDir = path.join(__dirname, "commands");
+
+    const loadCommands = async (dir: string) => {
+      const files = fs.readdirSync(dir);
+      for (const file of files) {
+        const fullPath = path.join(dir, file);
+        const stat = fs.statSync(fullPath);
+
+        if (stat.isDirectory()) {
+          await loadCommands(fullPath);
+        } else if ((file.endsWith(".ts") || file.endsWith(".js")) && !file.startsWith("BaseCommand")) {
+          try {
+            const { default: CommandClass } = await import(fullPath);
+            if (CommandClass && typeof CommandClass === "function") {
+              const cmd = new CommandClass();
+              cmd.db = db;
+              commandsList.push(cmd);
+            }
+          } catch (err) {
+            console.error(`❌ Error cargando comando ${file}:`, err);
+          }
+        }
+      }
+    };
+
+    await loadCommands(commandsDir);
+
+    const helpCmd = commandsList.find((c) => c.name === "help") as any;
+    if (helpCmd) {
+      helpCmd.allCommands = commandsList;
+    }
+
     const botService = new BotService(BOT_TOKEN!, db, commandsList, messageHandler);
 
     botService.launch();

@@ -5,6 +5,7 @@ export interface SessionData {
   temp: {
     username?: string;
     channel?: string;
+    threadId?: number;
   };
 }
 
@@ -23,9 +24,13 @@ export interface Account {
   client_id: number;
   username: string;
   channel_id: string;
+  thread_id?: string;
 }
 
 export interface Command {
   name: string;
+  adminOnly: boolean;
+  description: string;
+  usage: string;
   execute(ctx: BotContext): Promise<void>;
 }

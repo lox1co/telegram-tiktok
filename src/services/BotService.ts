@@ -52,6 +52,12 @@ class BotService {
     for (const command of this.commands) {
       this.bot.command(command.name, async (ctx) => {
         try {
+          if (command.adminOnly) {
+            const adminId = Number(process.env.ADMIN_ID);
+            if (ctx.from?.id !== adminId) {
+              return;
+            }
+          }
           await command.execute(ctx);
         } catch (err) {
           console.error(`Error ejecutando comando ${command.name}:`, err);

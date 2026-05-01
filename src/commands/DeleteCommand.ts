@@ -3,14 +3,14 @@ import Database from "../db/database";
 import { BotContext } from "../types";
 
 class DeleteCommand extends BaseCommand {
-  constructor(db: Database, adminId: number) {
-    super("delete", db, adminId);
-  }
+  name = "delete";
+  description = "Elimina una cuenta de TikTok registrada";
+  usage = "/delete username";
 
   async execute(ctx: BotContext): Promise<void> {
     if (!(await this.isClient(ctx))) return;
 
-    if (!ctx.message || !('text' in ctx.message) || !ctx.from) return;
+    if (!ctx.message || !("text" in ctx.message) || !ctx.from) return;
 
     const parts = ctx.message.text.split(" ");
     if (parts.length < 2) {

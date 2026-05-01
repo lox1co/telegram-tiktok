@@ -12,8 +12,14 @@ class MessageHandler {
     if (!ctx.session.step) return;
 
     if (ctx.session.step === "addclient") {
-      let user: any = ctx.message && 'forward_from' in ctx.message ? ctx.message.forward_from : null;
-      if (!user && ctx.message && 'reply_to_message' in ctx.message && ctx.message.reply_to_message && 'from' in ctx.message.reply_to_message) {
+      let user: any = ctx.message && "forward_from" in ctx.message ? ctx.message.forward_from : null;
+      if (
+        !user &&
+        ctx.message &&
+        "reply_to_message" in ctx.message &&
+        ctx.message.reply_to_message &&
+        "from" in ctx.message.reply_to_message
+      ) {
         user = ctx.message.reply_to_message.from;
       }
 
@@ -30,49 +36,38 @@ class MessageHandler {
       return;
     }
 
-    if (ctx.session.step === "username") {
-      if (ctx.message && 'text' in ctx.message) {
+    if (ctx.session.step === "username" && ctx.from) {
+      if (ctx.message && "text" in ctx.message) {
         ctx.session.temp.username = ctx.message.text;
       }
-      ctx.session.step = "channel";
 
-      await ctx.reply("📢 Reenvía mensaje del canal o escribe ID");
-      return;
-    }
-
-    if (ctx.session.step === "channel" && ctx.from) {
       const client = await this.db.getClientById(ctx.from.id);
       if (!client) {
-          await ctx.reply("❌ Cliente no encontrado");
-          return;
+        await ctx.reply("❌ Cliente no encontrado");
+        return;
       }
 
       const accounts = await this.db.getAccounts(ctx.from.id);
-
       if (accounts.length >= client.account_limit) {
         await ctx.reply("⚠️ Límite alcanzado");
         return;
       }
 
-      let channel: string | number | undefined;
-      if (ctx.message && 'forward_from_chat' in ctx.message && ctx.message.forward_from_chat) {
-          channel = (ctx.message.forward_from_chat as any).id;
-      } else if (ctx.message && 'text' in ctx.message) {
-          channel = ctx.message.text;
-      }
+      const { username, channel, threadId } = ctx.session.temp;
 
-      if (!channel || !ctx.session.temp.username) {
-         await ctx.reply("❌ Error leyendo canal o username");
-         return;
+      if (!username || !channel) {
+        await ctx.reply("❌ Error: faltan datos de configuración (chat/topic no detectado)");
+        return;
       }
 
       await this.db.addAccount({
-        username: ctx.session.temp.username,
-        channel_id: channel.toString(),
+        username,
+        channel_id: channel,
+        thread_id: threadId?.toString(),
         client_id: ctx.from.id,
       });
 
-      await ctx.reply("✅ Cuenta agregada");
+      await ctx.reply(`✅ Cuenta @${username} configurada correctamente en este ${threadId ? "tema" : "chat"}.`);
 
       ctx.session.step = null;
       ctx.session.temp = {};

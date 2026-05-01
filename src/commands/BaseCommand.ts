@@ -2,19 +2,12 @@ import Database from "../db/database";
 import { BotContext, Client, Command } from "../types";
 
 abstract class BaseCommand implements Command {
-  public name: string;
-  protected db: Database;
-  protected adminId: number;
+  public abstract name: string;
+  public abstract description: string;
+  public abstract usage: string;
+  public adminOnly: boolean = false;
 
-  constructor(name: string, db: Database, adminId: number) {
-    this.name = name;
-    this.db = db;
-    this.adminId = adminId;
-  }
-
-  isAdmin(ctx: BotContext): boolean {
-    return !!(ctx.from && ctx.from.id === this.adminId);
-  }
+  public db!: Database;
 
   async getClient(ctx: BotContext): Promise<Client | undefined> {
     if (!ctx.from) return undefined;

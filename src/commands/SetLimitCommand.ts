@@ -3,14 +3,13 @@ import Database from "../db/database";
 import { BotContext } from "../types";
 
 class SetLimitCommand extends BaseCommand {
-  constructor(db: Database, adminId: number) {
-    super("setlimit", db, adminId);
-  }
+  name = "setlimit";
+  description = "Cambia el límite de cuentas de un cliente";
+  usage = "/setlimit userId limit";
+  adminOnly = true;
 
   async execute(ctx: BotContext): Promise<void> {
-    if (!this.isAdmin(ctx)) return;
-
-    if (!ctx.message || !('text' in ctx.message)) return;
+    if (!ctx.message || !("text" in ctx.message)) return;
 
     const parts = ctx.message.text.split(" ");
 

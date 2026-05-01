@@ -3,9 +3,9 @@ import Database from "../db/database";
 import { BotContext } from "../types";
 
 class ListCommand extends BaseCommand {
-  constructor(db: Database, adminId: number) {
-    super("list", db, adminId);
-  }
+  name = "list";
+  description = "Muestra todas tus cuentas de TikTok registradas";
+  usage = "/list";
 
   async execute(ctx: BotContext): Promise<void> {
     if (!(await this.isClient(ctx))) return;

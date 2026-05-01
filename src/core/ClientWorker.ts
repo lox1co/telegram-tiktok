@@ -13,7 +13,14 @@ class ClientWorker {
   private downloader: DownloaderService;
   private telegram: TelegramService;
 
-  constructor(client: Client, globalQueue: PQueue, db: Database, tiktok: TikTokService, downloader: DownloaderService, telegram: TelegramService) {
+  constructor(
+    client: Client,
+    globalQueue: PQueue,
+    db: Database,
+    tiktok: TikTokService,
+    downloader: DownloaderService,
+    telegram: TelegramService,
+  ) {
     this.client = client;
     this.queue = globalQueue;
     this.db = db;
@@ -25,12 +32,20 @@ class ClientWorker {
   async run(): Promise<void> {
     const accounts = await this.db.getAccounts(this.client.id);
     for (const acc of accounts) {
-      const videos = await this.tiktok.getVideos(acc.username, 7);
-
-      for (const id of [...videos].reverse()) {
-        this.queue.add(() => this.processVideo(acc, id));
-      }
+      await this.telegram.send(
+        acc.channel_id,
+        "./tmp/client_5021992811/7634759798923234568.mp4",
+        acc.username,
+        "7634759798923234568",
+        acc.thread_id,
+      );
     }
+    //   const videos = await this.tiktok.getVideos(acc.username, 7);
+
+    //   for (const id of [...videos].reverse()) {
+    //     this.queue.add(() => this.processVideo(acc, id));
+    //   }
+    // }
   }
 
   async processVideo(account: Account, videoId: string, attempt: number = 1): Promise<void> {
@@ -42,7 +57,7 @@ class ClientWorker {
 
       const file = await this.downloader.download(videoId, this.client.id, account.username);
 
-      await this.telegram.send(account.channel_id, file, account.username, videoId);
+      await this.telegram.send(account.channel_id, file, account.username, videoId, account.thread_id);
 
       await this.db.markSent(videoId, this.client.id);
       // this.downloader.delete(file); // Comentado según solicitud
