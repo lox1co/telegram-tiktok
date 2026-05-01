@@ -32,20 +32,12 @@ class ClientWorker {
   async run(): Promise<void> {
     const accounts = await this.db.getAccounts(this.client.id);
     for (const acc of accounts) {
-      await this.telegram.send(
-        acc.channel_id,
-        "./tmp/client_5021992811/7634759798923234568.mp4",
-        acc.username,
-        "7634759798923234568",
-        acc.thread_id,
-      );
-    }
-    //   const videos = await this.tiktok.getVideos(acc.username, 7);
+      const videos = await this.tiktok.getVideos(acc.username, 7);
 
-    //   for (const id of [...videos].reverse()) {
-    //     this.queue.add(() => this.processVideo(acc, id));
-    //   }
-    // }
+      for (const id of [...videos].reverse()) {
+        this.queue.add(() => this.processVideo(acc, id));
+      }
+    }
   }
 
   async processVideo(account: Account, videoId: string, attempt: number = 1): Promise<void> {
