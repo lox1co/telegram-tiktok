@@ -52,7 +52,7 @@ class ClientWorker {
       await this.telegram.send(account.channel_id, file, account.username, videoId, account.thread_id);
 
       await this.db.markSent(videoId, this.client.id);
-      // this.downloader.delete(file); // Comentado según solicitud
+      this.downloader.delete(file); // Comentado según solicitud
     } catch (err) {
       if (attempt < MAX) {
         setTimeout(() => {
