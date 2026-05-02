@@ -1,5 +1,4 @@
 import BaseCommand from "./BaseCommand";
-import Database from "../db/database";
 import { BotContext } from "../types";
 
 class SetupCommand extends BaseCommand {
