@@ -27,7 +27,10 @@ class System {
       const clients = await this.db.getClients();
       for (const client of clients) {
         if (!this.workers.has(client.id)) {
-          this.workers.set(client.id, new ClientWorker(client, this.globalQueue, this.db, this.tiktok, this.downloader, this.telegram));
+          this.workers.set(
+            client.id,
+            new ClientWorker(client, this.globalQueue, this.db, this.tiktok, this.downloader, this.telegram),
+          );
         }
 
         const worker = this.workers.get(client.id);

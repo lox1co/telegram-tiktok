@@ -11,7 +11,7 @@ class TikTokService {
       "%(id)s",
       "--playlist-items",
       `1:${limit}`,
-      `https://www.tiktok.com/@${username}`
+      `https://www.tiktok.com/@${username}`,
     ]);
 
     return stdout.trim().split("\n").filter(Boolean);

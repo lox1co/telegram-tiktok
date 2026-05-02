@@ -17,6 +17,7 @@ export interface Client {
   id: number;
   name: string;
   account_limit: number;
+  template?: string;
 }
 
 export interface Account {

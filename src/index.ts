@@ -39,7 +39,6 @@ async function start(): Promise<void> {
 
     const messageHandler = new MessageHandler(db);
 
-    // Dynamic Command Loading
     const commandsList: any[] = [];
     const commandsDir = path.join(__dirname, "commands");
 

@@ -14,13 +14,10 @@ class DownloaderService {
 
   async download(videoId: string, clientId: number, username: string): Promise<string> {
     const dir = this.getClientDir(clientId);
-    const file = path.join(dir, `${videoId}.mp4`);
+    const file = path.join(dir, `${videoId.substring(0, 20)}.mp4`);
+    const url = videoId.startsWith("http") ? videoId : `https://www.tiktok.com/@${username}/video/${videoId}`;
 
-    await execFilePromise("yt-dlp", [
-      "-o",
-      file,
-      `https://www.tiktok.com/@${username}/video/${videoId}`
-    ]);
+    await execFilePromise("yt-dlp", ["-o", file, url]);
 
     return file;
   }

@@ -1,6 +1,8 @@
 import Database from "../db/database";
 import { BotContext, Client, Command } from "../types";
 
+import DownloaderService from "../services/DownloaderService";
+
 abstract class BaseCommand implements Command {
   public abstract name: string;
   public abstract description: string;
@@ -8,6 +10,7 @@ abstract class BaseCommand implements Command {
   public adminOnly: boolean = false;
 
   public db!: Database;
+  public downloader!: DownloaderService;
 
   async getClient(ctx: BotContext): Promise<Client | undefined> {
     if (!ctx.from) return undefined;

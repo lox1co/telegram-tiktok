@@ -49,10 +49,19 @@ class ClientWorker {
 
       const file = await this.downloader.download(videoId, this.client.id, account.username);
 
-      await this.telegram.send(account.channel_id, file, account.username, videoId, account.thread_id);
+      let caption: string | undefined;
+      const template = await this.db.getTemplate(this.client.id);
+      if (template) {
+        caption = template
+          .replace(/{username}/g, account.username)
+          .replace(/{videoId}/g, videoId)
+          .replace(/{url}/g, `https://www.tiktok.com/@${account.username}/video/${videoId}`);
+      }
+
+      await this.telegram.send(account.channel_id, file, account.username, videoId, account.thread_id, caption);
 
       await this.db.markSent(videoId, this.client.id);
-      this.downloader.delete(file); // Comentado según solicitud
+      this.downloader.delete(file);
     } catch (err) {
       if (attempt < MAX) {
         setTimeout(() => {

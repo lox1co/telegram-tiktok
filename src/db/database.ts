@@ -14,8 +14,11 @@ class Database {
         CREATE TABLE IF NOT EXISTS clients (
             id INTEGER PRIMARY KEY,
             name TEXT,
-            account_limit INTEGER DEFAULT 1
+            account_limit INTEGER DEFAULT 1,
+            template TEXT
         );
+        -- Ensure template column exists if table was already created
+        ALTER TABLE clients ADD COLUMN template TEXT;
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_id INTEGER,
@@ -74,6 +77,31 @@ class Database {
   async setLimit(userId: number | string, limit: number | string): Promise<void> {
     const db = await this.dbPromise;
     await db.run("UPDATE clients SET account_limit=? WHERE id=?", [limit, userId]);
+  }
+
+  async setTemplate(clientId: number, template: string): Promise<void> {
+    const db = await this.dbPromise;
+    await db.run("UPDATE clients SET template=? WHERE id=?", [template, clientId]);
+  }
+
+  async getTemplate(clientId: number): Promise<string | undefined> {
+    const db = await this.dbPromise;
+    const row = await db.get<{ template: string }>("SELECT template FROM clients WHERE id=?", [clientId]);
+    return row?.template;
+  }
+
+  async getStats(clientId: number): Promise<{ accounts: number; videos: number }> {
+    const db = await this.dbPromise;
+    const accounts = await db.get<{ count: number }>("SELECT COUNT(*) as count FROM accounts WHERE client_id=?", [
+      clientId,
+    ]);
+    const videos = await db.get<{ count: number }>("SELECT COUNT(*) as count FROM sent_videos WHERE client_id=?", [
+      clientId,
+    ]);
+    return {
+      accounts: accounts?.count || 0,
+      videos: videos?.count || 0,
+    };
   }
 
   async addAccount(data: {
