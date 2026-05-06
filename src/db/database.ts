@@ -142,6 +142,18 @@ class Database {
       [id, JSON.stringify(data)],
     );
   }
+
+  async getGlobalStats(): Promise<{ totalClients: number; totalAccounts: number; totalVideos: number }> {
+    const db = await this.dbPromise;
+    const clients = await db.get<{ count: number }>("SELECT COUNT(*) as count FROM clients");
+    const accounts = await db.get<{ count: number }>("SELECT COUNT(*) as count FROM accounts");
+    const videos = await db.get<{ count: number }>("SELECT COUNT(*) as count FROM sent_videos");
+    return {
+      totalClients: clients?.count || 0,
+      totalAccounts: accounts?.count || 0,
+      totalVideos: videos?.count || 0,
+    };
+  }
 }
 
 export default Database;

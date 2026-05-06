@@ -11,31 +11,6 @@ class MessageHandler {
   async handle(ctx: BotContext): Promise<void> {
     if (!ctx.session.step) return;
 
-    if (ctx.session.step === "addclient") {
-      let user: any = ctx.message && "forward_from" in ctx.message ? ctx.message.forward_from : null;
-      if (
-        !user &&
-        ctx.message &&
-        "reply_to_message" in ctx.message &&
-        ctx.message.reply_to_message &&
-        "from" in ctx.message.reply_to_message
-      ) {
-        user = ctx.message.reply_to_message.from;
-      }
-
-      if (!user) {
-        await ctx.reply("❌ No se pudo obtener usuario");
-        return;
-      }
-
-      await this.db.addClientWithId(user.id, user.first_name);
-
-      await ctx.reply(`✅ Cliente agregado\n${user.first_name}\nID: ${user.id}`);
-
-      ctx.session.step = null;
-      return;
-    }
-
     if (ctx.session.step === "username" && ctx.from) {
       if (ctx.message && "text" in ctx.message) {
         ctx.session.temp.username = ctx.message.text;

@@ -10,6 +10,7 @@ import TelegramService from "./services/TelegramService";
 import System from "./core/System";
 import BotService from "./services/BotService";
 import MessageHandler from "./handlers/MessageHandler";
+import PQueue from "p-queue";
 
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const ADMIN_ID = Number(process.env.ADMIN_ID);
@@ -34,8 +35,9 @@ async function start(): Promise<void> {
     const tiktok = new TikTokService();
     const downloader = new DownloaderService();
     const telegram = new TelegramService(BOT_TOKEN!);
+    const globalQueue = new PQueue({ concurrency: 3 });
 
-    const system = new System(db, tiktok, downloader, telegram);
+    const system = new System(db, tiktok, downloader, telegram, globalQueue);
 
     const messageHandler = new MessageHandler(db);
 

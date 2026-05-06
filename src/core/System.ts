@@ -13,13 +13,19 @@ class System {
   private workers: Map<number, ClientWorker>;
   private globalQueue: PQueue;
 
-  constructor(db: Database, tiktok: TikTokService, downloader: DownloaderService, telegram: TelegramService) {
+  constructor(
+    db: Database,
+    tiktok: TikTokService,
+    downloader: DownloaderService,
+    telegram: TelegramService,
+    globalQueue: PQueue,
+  ) {
     this.db = db;
     this.tiktok = tiktok;
     this.downloader = downloader;
     this.telegram = telegram;
     this.workers = new Map();
-    this.globalQueue = new PQueue({ concurrency: 3 });
+    this.globalQueue = globalQueue;
   }
 
   async tick(): Promise<void> {
@@ -36,7 +42,7 @@ class System {
         const worker = this.workers.get(client.id);
         if (worker) {
           worker.run().catch((err: Error) => {
-            console.error(`💥 Error en worker.run() para cliente ${client.id}:`, err);
+            console.error(`💥 Error en worker para cliente ${client.id}:`, err);
           });
         }
       }

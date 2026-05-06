@@ -31,17 +31,25 @@ class ClientWorker {
 
   async run(): Promise<void> {
     const accounts = await this.db.getAccounts(this.client.id);
-    for (const acc of accounts) {
-      const videos = await this.tiktok.getVideos(acc.username, 7);
+    const template = await this.db.getTemplate(this.client.id);
 
-      for (const id of [...videos].reverse()) {
-        this.queue.add(() => this.processVideo(acc, id));
-      }
-    }
+    await Promise.all(
+      accounts.map(async (acc) => {
+        try {
+          const videos = await this.tiktok.getVideos(acc.username, 7);
+
+          for (const id of [...videos].reverse()) {
+            this.queue.add(() => this.processVideo(acc, id, template));
+          }
+        } catch (err) {
+          console.error(`❌ Error al obtener videos para @${acc.username}`, err);
+        }
+      })
+    );
   }
 
-  async processVideo(account: Account, videoId: string, attempt: number = 1): Promise<void> {
-    const MAX = 3;
+  async processVideo(account: Account, videoId: string, template?: string, attempt: number = 1): Promise<void> {
+    const MAX_RETRIES = 3;
 
     try {
       const sent = await this.db.isSent(videoId, this.client.id);
@@ -50,7 +58,6 @@ class ClientWorker {
       const file = await this.downloader.download(videoId, this.client.id, account.username);
 
       let caption: string | undefined;
-      const template = await this.db.getTemplate(this.client.id);
       if (template) {
         caption = template
           .replace(/{username}/g, account.username)
@@ -63,10 +70,10 @@ class ClientWorker {
       await this.db.markSent(videoId, this.client.id);
       this.downloader.delete(file);
     } catch (err) {
-      if (attempt < MAX) {
+      if (attempt < MAX_RETRIES) {
         setTimeout(() => {
-          this.processVideo(account, videoId, attempt + 1);
-        }, 2000);
+          this.queue.add(() => this.processVideo(account, videoId, template, attempt + 1));
+        }, 5000 * attempt);
       } else {
         console.log(`❌ Cliente ${this.client.id} intento ${attempt}`, err);
       }
