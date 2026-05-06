@@ -1,6 +1,7 @@
 npm i
-npm i -g ts-node
 
-pm2 start src/index.ts --name tiktok-bot --node-args="--loader ts-node/esm" --interpreter node
+npm run build
+
+pm2 start dist/index.js --name tiktok-bot
 
 pm2 save
