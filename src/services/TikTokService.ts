@@ -1,25 +1,20 @@
-import { YtDlp } from "ytdlp-nodejs";
+import { execFile } from "child_process";
+import util from "util";
+
+const execFilePromise = util.promisify(execFile);
 
 class TikTokService {
-  private ytdlp: YtDlp;
-
-  constructor() {
-    this.ytdlp = new YtDlp();
-  }
-
   async getVideos(username: string, limit: number = 7): Promise<string[]> {
-    const result = await this.ytdlp
-      .execBuilder(`https://www.tiktok.com/@${username}`)
-      .addArgs(
-        "--flat-playlist",
-        "--print",
-        "%(id)s",
-        "--playlist-items",
-        `1:${limit}`
-      )
-      .exec();
+    const { stdout } = await execFilePromise("yt-dlp", [
+      "--flat-playlist",
+      "--print",
+      "%(id)s",
+      "--playlist-items",
+      `1:${limit}`,
+      `https://www.tiktok.com/@${username}`,
+    ]);
 
-    return result.stdout.trim().split("\n").filter(Boolean);
+    return stdout.trim().split("\n").filter(Boolean);
   }
 }
 
