@@ -58,6 +58,7 @@ async function start(): Promise<void> {
             if (CommandClass && typeof CommandClass === "function") {
               const cmd = new CommandClass();
               cmd.db = db;
+              cmd.downloader = downloader;
               commandsList.push(cmd);
             }
           } catch (err) {
