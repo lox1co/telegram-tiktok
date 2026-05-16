@@ -3,5 +3,4 @@ dist
 tmp
 
 .env
-package-lock.json
 database.sqlite
