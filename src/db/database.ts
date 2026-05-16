@@ -17,8 +17,6 @@ class Database {
             account_limit INTEGER DEFAULT 1,
             template TEXT
         );
-        -- Ensure template column exists if table was already created
-        ALTER TABLE clients ADD COLUMN template TEXT;
         CREATE TABLE IF NOT EXISTS accounts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             client_id INTEGER,
