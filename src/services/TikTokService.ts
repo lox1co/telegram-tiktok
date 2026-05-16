@@ -5,7 +5,7 @@ const execFilePromise = util.promisify(execFile);
 
 class TikTokService {
   async getVideos(username: string, limit: number = 7): Promise<string[]> {
-    const { stdout } = await execFilePromise("yt-dlp", [
+    const { stdout } = await execFilePromise("./yt-dlp", [
       "--flat-playlist",
       "--print",
       "%(id)s",

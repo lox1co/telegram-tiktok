@@ -18,7 +18,7 @@ class DownloaderService {
     const file = path.join(dir, `${safeName}.mp4`);
     const url = videoId.startsWith("http") ? videoId : `https://www.tiktok.com/@${username}/video/${videoId}`;
 
-    await execFilePromise("yt-dlp", ["-o", file, url]);
+    await execFilePromise("./yt-dlp", ["-o", file, url]);
 
     return file;
   }
