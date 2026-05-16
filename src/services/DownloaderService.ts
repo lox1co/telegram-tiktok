@@ -1,11 +1,14 @@
-import { execFile } from "child_process";
-import util from "util";
 import fs from "fs";
 import path from "path";
-
-const execFilePromise = util.promisify(execFile);
+import { YtDlp } from "ytdlp-nodejs";
 
 class DownloaderService {
+  private ytdlp: YtDlp;
+
+  constructor() {
+    this.ytdlp = new YtDlp();
+  }
+
   getClientDir(clientId: number): string {
     const dir = `./tmp/client_${clientId}`;
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -17,7 +20,10 @@ class DownloaderService {
     const file = path.join(dir, `${videoId.substring(0, 20)}.mp4`);
     const url = videoId.startsWith("http") ? videoId : `https://www.tiktok.com/@${username}/video/${videoId}`;
 
-    await execFilePromise("yt-dlp", ["-o", file, url]);
+    await this.ytdlp
+      .download(url)
+      .addArgs("-o", file)
+      .run();
 
     return file;
   }
