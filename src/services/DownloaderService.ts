@@ -14,7 +14,8 @@ class DownloaderService {
 
   async download(videoId: string, clientId: number, username: string): Promise<string> {
     const dir = this.getClientDir(clientId);
-    const file = path.join(dir, `${videoId.substring(0, 20)}.mp4`);
+    const safeName = videoId.replace(/[^a-zA-Z0-9]/g, "_").substring(0, 20);
+    const file = path.join(dir, `${safeName}.mp4`);
     const url = videoId.startsWith("http") ? videoId : `https://www.tiktok.com/@${username}/video/${videoId}`;
 
     await execFilePromise("yt-dlp", ["-o", file, url]);
