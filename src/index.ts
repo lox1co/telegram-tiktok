@@ -29,11 +29,29 @@ async function start(): Promise<void> {
   try {
     console.log("🚀 Iniciando sistema...");
 
+    const tiktok = new TikTokService();
+    const downloader = new DownloaderService();
+    
+    // Verify yt-dlp works correctly, or gracefully explain what is missing.
+    try {
+      console.log("⚙️ Verificando dependencias de yt-dlp...");
+      const ytdlp = new (require("ytdlp-nodejs").YtDlp)();
+      await ytdlp.getVersionAsync();
+      console.log("✅ yt-dlp está listo.");
+    } catch (err: any) {
+      if (err.message && err.message.includes("127")) {
+        console.error("❌ ERROR CRÍTICO: yt-dlp no puede ejecutarse (Código 127).");
+        console.error("👉 SOLUCIÓN: Parece que falta Python 3 en tu VPS/Docker.");
+        console.error("👉 Por favor, instala Python 3 (ej. 'apt-get install python3' o 'apk add python3').");
+      } else {
+        console.error("❌ ERROR CRÍTICO verificando yt-dlp:", err.message);
+      }
+      process.exit(1);
+    }
+
     const db = new Database();
     await db.dbPromise;
 
-    const tiktok = new TikTokService();
-    const downloader = new DownloaderService();
     const telegram = new TelegramService(BOT_TOKEN!);
     const globalQueue = new PQueue({ concurrency: 3 });
 
